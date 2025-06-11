@@ -1,0 +1,14 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_divisas_currency_manager,divisas.currency.manager,model_divisas_currency,divisas.group_divisas_manager,1,1,1,1
+access_divisas_currency_user,divisas.currency.user,model_divisas_currency,divisas.group_divisas_user,1,1,1,0
+access_divisas_currency_readonly,divisas.currency.readonly,model_divisas_currency,divisas.group_divisas_readonly,1,0,0,0
+access_divisas_wallet_movement_manager,divisas.wallet.movement.manager,model_divisas_wallet_movement,divisas.group_divisas_manager,1,1,1,1
+access_divisas_wallet_movement_user,divisas.wallet.movement.user,model_divisas_wallet_movement,divisas.group_divisas_user,1,1,1,0
+access_divisas_wallet_movement_readonly,divisas.wallet.movement.readonly,model_divisas_wallet_movement,divisas.group_divisas_readonly,1,0,0,0
+access_divisas_exchange_rate_manager,divisas.exchange.rate.manager,model_divisas_exchange_rate,divisas.group_divisas_manager,1,1,1,1
+access_divisas_exchange_rate_user,divisas.exchange.rate.user,model_divisas_exchange_rate,divisas.group_divisas_user,1,0,0,0
+access_divisas_exchange_rate_readonly,divisas.exchange.rate.readonly,model_divisas_exchange_rate,divisas.group_divisas_readonly,1,0,0,0
+access_divisas_exchange_rate_wizard_manager,divisas.exchange.rate.wizard.manager,model_divisas_exchange_rate_wizard,divisas.group_divisas_manager,1,1,1,1
+access_divisas_exchange_rate_wizard_user,divisas.exchange.rate.wizard.user,model_divisas_exchange_rate_wizard,divisas.group_divisas_user,1,1,1,1
+access_divisas_exchange_wizard_manager,divisas.exchange.wizard.manager,model_divisas_exchange_wizard,divisas.group_divisas_manager,1,1,1,1
+access_divisas_exchange_wizard_user,divisas.exchange.wizard.user,model_divisas_exchange_wizard,divisas.group_divisas_user,1,1,1,1

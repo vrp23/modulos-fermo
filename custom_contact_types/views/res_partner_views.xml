@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Heredamos la vista de formulario de contactos -->
+    <record id="view_partner_form_inherit" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Añadimos el campo de tipo de contacto en la columna derecha, después de Etiquetas -->
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="partner_type_id" options="{'no_create': true}" placeholder="Tipo de contacto"/>
+            </xpath>
+            
+            <!-- Añadimos una página para tasas y comisiones -->
+            <notebook position="inside">
+                <page string="Tasas y Comisiones" name="custom_fields">
+                    <group>
+                        <group string="Configuración Financiera" name="financial_settings">
+                            <field name="pesification_rate"/>
+                            <field name="monthly_interest"/>
+                            <field name="assigned_seller_id" domain="[('share', '=', False)]"/>
+                        </group>
+                        <group string="Configuración de Comisiones" name="commission_settings">
+                            <field name="commission_checks"/>
+                            <field name="commission_dollars"/>
+                            <field name="commission_crypto"/>
+                            <field name="commission_transfers"/>
+                            <field name="commission_cables"/>
+                        </group>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,188 @@
+Documentación Técnica del Módulo Divisas
+Resumen
+El módulo "Divisas" proporciona una solución para la gestión de operaciones de compra y venta de divisas y criptomonedas (USD, USDT y ARS) en Odoo 17 CE. Se integra con el módulo "Chequera" existente, específicamente con el sistema de wallet en ARS, y extiende la funcionalidad para soportar múltiples monedas.
+Características principales
+
+Gestión de wallets en múltiples monedas (ARS, USD, USDT)
+Dashboard con acceso rápido a operaciones y visualización de últimas transacciones
+Compra y venta de divisas con tipos de cambio configurables
+Integración con la wallet ARS existente del módulo "Chequera"
+Historial detallado de operaciones por cliente
+Tipos de cambio personalizables con historial
+
+Estructura del código
+Modelos principales
+divisas.currency
+El modelo central que representa una operación de compra o venta de divisas.
+pythonclass DivisasCurrency(models.Model):
+    _name = 'divisas.currency'
+    _description = 'Operación de Divisa/Cripto'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+Campos clave:
+
+operation_type: Tipo de operación ('buy': La empresa compra al partner, 'sell': La empresa vende al partner)
+partner_id: Cliente/Contacto relacionado
+currency_type: Moneda de la operación (USD, USDT, ARS)
+payment_currency_type: Moneda de pago (USD, USDT, ARS)
+amount: Monto de la moneda principal
+payment_amount: Monto a pagar calculado según el tipo de cambio
+exchange_rate: Tipo de cambio aplicado
+state: Estado de la operación (draft, confirmed, cancelled)
+
+divisas.wallet.movement
+Modelo que registra los movimientos en las wallets de los contactos.
+pythonclass DivisasWalletMovement(models.Model):
+    _name = 'divisas.wallet.movement'
+    _description = 'Movimiento de Wallet'
+Campos clave:
+
+partner_id: Cliente/Contacto relacionado
+operation_type: Tipo de operación (buy, sell, adjustment)
+currency_type: Moneda de la operación
+payment_currency_type: Moneda de pago
+amount: Monto de la moneda principal
+payment_amount: Monto pagado/recibido
+state: Estado del movimiento (confirmed, cancelled)
+
+divisas.exchange.rate
+Modelo para la gestión de tipos de cambio entre monedas.
+pythonclass DivisasExchangeRate(models.Model):
+    _name = 'divisas.exchange.rate'
+    _description = 'Tipo de Cambio'
+Campos clave:
+
+from_currency_type: Moneda origen
+to_currency_type: Moneda destino
+rate: Tipo de cambio para compra
+sell_rate: Tipo de cambio para venta
+date: Fecha de vigencia
+
+Extensión de res.partner
+Extiende el modelo res.partner para añadir soporte para wallets en USD y USDT.
+pythonclass ResPartner(models.Model):
+    _inherit = 'res.partner'
+Campos añadidos:
+
+wallet_usd_balance: Saldo en USD
+wallet_usdt_balance: Saldo en USDT
+divisas_movement_ids: Relación con los movimientos de divisas
+
+Asistentes (Wizards)
+divisas.exchange.wizard
+Asistente para realizar operaciones de compra/venta de divisas.
+pythonclass DivisasExchangeWizard(models.TransientModel):
+    _name = 'divisas.exchange.wizard'
+    _description = 'Asistente de Operaciones de Divisas'
+divisas.exchange.rate.wizard
+Asistente para actualizar tipos de cambio.
+pythonclass DivisasExchangeRateWizard(models.TransientModel):
+    _name = 'divisas.exchange.rate.wizard'
+    _description = 'Asistente de Actualización de Tipo de Cambio'
+Lógica de negocio
+Operación de compra/venta
+
+Compra: La empresa compra divisa al partner
+
+El partner entrega la divisa (su wallet disminuye)
+El partner recibe el pago (su wallet aumenta)
+
+
+Venta: La empresa vende divisa al partner
+
+El partner recibe la divisa (su wallet aumenta)
+El partner entrega el pago (su wallet disminuye)
+
+
+
+Actualización de wallets
+El módulo utiliza dos enfoques para actualizar saldos:
+
+Wallets USD/USDT: Actualización directa de los campos wallet_usd_balance y wallet_usdt_balance
+Wallet ARS: Extensión del método _compute_wallet_balance del módulo Chequera para considerar también los movimientos de divisas
+
+python@api.depends('wallet_cheques_ids', 'wallet_cheques_ids.monto', 
+            'wallet_cheques_ids.tipo', 'wallet_cheques_ids.active',
+            'wallet_cheques_ids.state',
+            'divisas_movement_ids', 'divisas_movement_ids.amount',
+            'divisas_movement_ids.payment_amount',
+            'divisas_movement_ids.currency_type', 
+            'divisas_movement_ids.payment_currency_type',
+            'divisas_movement_ids.operation_type',
+            'divisas_movement_ids.state')
+def _compute_wallet_balance(self):
+    # Primero calculamos el saldo basado en movimientos de cheques
+    super(ResPartner, self)._compute_wallet_balance()
+    
+    # Luego sumamos/restamos los movimientos de divisas que involucran ARS
+    for partner in self:
+        divisas_movements = partner.divisas_movement_ids.filtered(
+            lambda m: m.state == 'confirmed'
+        )
+        
+        for movement in divisas_movements:
+            # Lógica específica para cada tipo de operación...
+Cálculo de tipos de cambio
+El cálculo del monto a pagar se realiza mediante la multiplicación del monto por el tipo de cambio:
+python@api.depends('amount', 'exchange_rate', 'operation_type')
+def _compute_payment_amount(self):
+    for record in self:
+        # Tanto para compra como venta, multiplicamos por el tipo de cambio
+        record.payment_amount = record.amount * record.exchange_rate
+Integración con el módulo Chequera
+El módulo Divisas se integra con el módulo Chequera de la siguiente manera:
+
+Wallet ARS compartida: Extiende el cálculo del saldo de la wallet ARS para incluir operaciones de divisas
+Interfaz de usuario integrada: Añade los saldos de USD y USDT en la misma vista de Wallets que la ARS
+Acceso común: Proporciona botones para acceder a los movimientos específicos de cada tipo
+
+Puntos de extensión para módulos futuros
+Wallets para otras monedas
+Se puede extender el módulo para añadir soporte para más monedas siguiendo este patrón:
+
+Añadir campos para las nuevas wallets en res.partner
+
+pythonwallet_eur_balance = fields.Float(string='Saldo Wallet EUR', default=0.0)
+
+Extender las opciones de selección en los campos relacionados con monedas
+
+pythoncurrency_type = fields.Selection([
+    ('USD', 'Dólares (USD)'),
+    ('USDT', 'Tether (USDT)'),
+    ('ARS', 'Pesos (ARS)'),
+    ('EUR', 'Euros (EUR)')  # Nueva moneda
+], string='Moneda', required=True)
+
+Actualizar la lógica de actualización de wallets en _update_wallet_balances para manejar la nueva moneda
+
+Añadir restricciones o validaciones
+Para añadir validaciones adicionales, se pueden extender los métodos existentes:
+python@api.constrains('amount', 'payment_amount')
+def _check_amounts(self):
+    for record in self:
+        # Validaciones personalizadas
+        pass
+Integración con contabilidad
+Para integración con contabilidad, se podría añadir un módulo que escuche los eventos de creación/confirmación de operaciones:
+python@api.model
+def create(self, vals):
+    res = super(DivisasCurrency, self).create(vals)
+    # Crear asientos contables
+    return res
+
+def action_confirm(self):
+    res = super(DivisasCurrency, self).action_confirm()
+    # Crear asientos contables
+    return res
+Consideraciones de seguridad
+
+Las wallets USD y USDT están configuradas como campos de solo lectura en la interfaz de usuario
+La actualización de tipos de cambio debería estar protegida por grupos de seguridad
+El módulo respeta los permisos de acceso definidos en ir.model.access.csv
+
+Posibles mejoras futuras
+
+Conexión con APIs externas: Implementar actualización automática de tipos de cambio
+Sistema de aprobación: Añadir un flujo de trabajo que requiera aprobación para operaciones grandes
+Reportes estadísticos: Añadir gráficos y reportes para análisis de operaciones
+Integración con POS: Permitir realizar operaciones desde el punto de venta
+Módulo de caja: Desarrollar un módulo de caja para gestionar el flujo físico de dinero

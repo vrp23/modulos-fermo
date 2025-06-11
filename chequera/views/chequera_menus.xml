@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú raíz -->
+    <menuitem id="menu_chequera_root" 
+              name="Chequera" 
+              web_icon="chequera/static/description/icon.svg"
+              sequence="10"/>
+
+    <!-- Dashboard como página principal -->
+    <menuitem id="menu_chequera_dashboard" 
+              name="Dashboard" 
+              parent="menu_chequera_root" 
+              action="chequera.action_chequera_dashboard" 
+              sequence="10"/>
+
+    <!-- Menú de Operaciones -->
+    <menuitem id="menu_chequera_operations" 
+              name="Operaciones" 
+              parent="menu_chequera_root" 
+              sequence="20"/>
+              
+    <!-- Menú de Compra de Cheques (unificado) -->
+    <menuitem id="menu_chequera_purchase" 
+              name="Compra de Cheques" 
+              parent="menu_chequera_operations" 
+              action="chequera.action_chequera_purchase_wizard" 
+              sequence="10"/>
+
+    <menuitem id="menu_chequera_sale" 
+              name="Venta de Cheques" 
+              parent="menu_chequera_operations" 
+              action="chequera.action_chequera_sale_wizard" 
+              sequence="20"/>
+
+    <menuitem id="menu_chequera_checks" 
+              name="Todos los Cheques" 
+              parent="menu_chequera_operations" 
+              action="chequera.action_chequera_check" 
+              sequence="30"/>
+
+    <!-- CAMBIO: Movimientos directamente bajo Chequera, sin nivel Wallets -->
+    <menuitem id="menu_chequera_wallet" 
+              name="Movimientos" 
+              parent="menu_chequera_root" 
+              action="chequera.action_chequera_wallet" 
+              sequence="30"/>
+
+    <!-- Menú de Configuración -->
+    <menuitem id="menu_chequera_config" 
+              name="Configuración" 
+              parent="menu_chequera_root" 
+              sequence="100" 
+              groups="chequera.group_chequera_supervisor"/>
+
+    <menuitem id="menu_chequera_banks" 
+              name="Bancos" 
+              parent="menu_chequera_config" 
+              action="chequera.action_chequera_bank" 
+              sequence="10"/>
+
+    <menuitem id="menu_chequera_formulas" 
+              name="Fórmulas de Cálculo" 
+              parent="menu_chequera_config" 
+              action="chequera.action_chequera_formula" 
+              sequence="20"/>
+              
+    <!-- NUEVO: Menú de emisores -->
+    <menuitem id="menu_chequera_emisores" 
+              name="Emisores de Cheques" 
+              parent="menu_chequera_config" 
+              action="chequera.action_chequera_emisor" 
+              sequence="30"/>
+
+    <!-- Menú para ver operaciones de compra guardadas -->
+    <menuitem id="menu_chequera_purchase_operations" 
+            name="Operaciones de Compra" 
+            parent="menu_chequera_operations" 
+            action="chequera.action_chequera_purchase_operations" 
+            sequence="15"/>
+            
+    <!-- Menú para ver operaciones de venta guardadas -->
+    <menuitem id="menu_chequera_sale_operations" 
+            name="Operaciones de Venta" 
+            parent="menu_chequera_operations" 
+            action="chequera.action_chequera_sale_operations" 
+            sequence="25"/>
+</odoo>
